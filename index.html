@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VoiceRx – Your AI Health Assistant</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0f4c75 100%);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #fff;
+    }
+
+    .card {
+      text-align: center;
+      padding: 60px 48px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      backdrop-filter: blur(12px);
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+    }
+
+    .logo {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(90deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .tagline {
+      font-size: 1.05rem;
+      color: #94a3b8;
+      margin-bottom: 48px;
+      letter-spacing: 0.3px;
+    }
+
+    .pulse-ring {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 36px;
+    }
+
+    .pulse-ring::before,
+    .pulse-ring::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: rgba(96, 165, 250, 0.2);
+      animation: pulse 2s ease-out infinite;
+    }
+
+    .pulse-ring::after { animation-delay: 0.8s; }
+
+    .pulse-ring .mic-icon {
+      position: relative;
+      z-index: 1;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+
+    @keyframes pulse {
+      0%   { transform: scale(1);   opacity: 0.6; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+
+    #call-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 36px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+      letter-spacing: 0.3px;
+    }
+
+    #call-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5);
+    }
+
+    #call-btn:active { transform: translateY(0); }
+
+    #call-btn.active {
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 0.88rem;
+      color: #64748b;
+      min-height: 20px;
+    }
+
+    .disclaimer {
+      margin-top: 36px;
+      font-size: 0.75rem;
+      color: #475569;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">VoiceRx</div>
+    <div class="tagline">Your AI Health Assistant</div>
+
+    <div class="pulse-ring">
+      <div class="mic-icon">🎙️</div>
+    </div>
+
+    <button id="call-btn" onclick="toggleCall()">
+      <span id="btn-icon">▶</span>
+      <span id="btn-text">Start Consultation</span>
+    </button>
+
+    <div id="status"></div>
+
+    <p class="disclaimer">
+      For informational purposes only.<br />
+      Always consult a qualified healthcare professional.
+    </p>
+  </div>
+
+  <script>
+    var vapiInstance = null;
+    var inCall = false;
+
+    var script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.js';
+    script.onload = function () {
+      vapiInstance = new Vapi('8f6ec153-8e27-4bb3-84fd-7a004ecf5946');
+
+      vapiInstance.on('call-start', function () {
+        setStatus('Connected — speak your question');
+        setActive(true);
+      });
+
+      vapiInstance.on('call-end', function () {
+        setStatus('Call ended');
+        setActive(false);
+        setTimeout(function () { setStatus(''); }, 3000);
+      });
+
+      vapiInstance.on('error', function (e) {
+        console.error(e);
+        setStatus('Something went wrong. Please try again.');
+        setActive(false);
+      });
+    };
+    document.head.appendChild(script);
+
+    function toggleCall() {
+      if (!vapiInstance) { setStatus('Loading…'); return; }
+      if (!inCall) {
+        setStatus('Connecting…');
+        vapiInstance.start('49ab265f-6a73-4956-9f47-7a31e9963bf4');
+      } else {
+        vapiInstance.stop();
+      }
+    }
+
+    function setActive(active) {
+      inCall = active;
+      var btn = document.getElementById('call-btn');
+      btn.classList.toggle('active', active);
+      document.getElementById('btn-icon').textContent = active ? '■' : '▶';
+      document.getElementById('btn-text').textContent  = active ? 'End Call' : 'Start Consultation';
+    }
+
+    function setStatus(msg) {
+      document.getElementById('status').textContent = msg;
+    }
+  </script>
+</body>
+</html>
