@@ -2,235 +2,138 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VoiceRx</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VoiceRx — AI Voice Health Assistant</title>
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #0a0a0a;
-      color: #fff;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-    }
-
-    /* ── Header ── */
-    header {
-      padding: 28px 36px;
-    }
-
-    .wordmark {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #fff;
-      letter-spacing: -0.2px;
-    }
-
-    .wordmark span {
-      display: block;
-      font-size: 0.72rem;
-      font-weight: 400;
-      color: #555;
-      margin-top: 2px;
-      letter-spacing: 0;
-    }
-
-    /* ── Main ── */
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 28px;
+      gap: 24px;
+      padding: 24px;
     }
-
-    /* Outer pulse rings */
-    .btn-wrap {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 200px;
-      height: 200px;
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 16px;
+      padding: 40px 32px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     }
-
-    .ring {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      border: 1px solid rgba(124, 58, 237, 0.3);
-      opacity: 0;
-    }
-
-    .btn-wrap.active .ring-1 {
-      animation: ripple 2s ease-out infinite;
-    }
-    .btn-wrap.active .ring-2 {
-      animation: ripple 2s ease-out 0.6s infinite;
-    }
-    .btn-wrap.active .ring-3 {
-      animation: ripple 2s ease-out 1.2s infinite;
-    }
-
-    @keyframes ripple {
-      0%   { transform: scale(1);    opacity: 0.5; }
-      100% { transform: scale(1.7);  opacity: 0; }
-    }
-
-    /* Main circle button */
+    .logo { font-size: 2rem; font-weight: 700; color: #58a6ff; margin-bottom: 8px; }
+    .tagline { color: #8b949e; font-size: 0.95rem; margin-bottom: 36px; }
     #call-btn {
-      position: relative;
-      z-index: 1;
-      width: 160px;
-      height: 160px;
-      border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: #111;
+      background: #238636;
       color: #fff;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 500;
+      border: none;
+      border-radius: 50px;
+      padding: 16px 40px;
+      font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
-      outline: none;
-      letter-spacing: 0.1px;
+      width: 100%;
+      transition: background 0.2s;
     }
-
-    #call-btn:hover {
-      border-color: rgba(124, 58, 237, 0.5);
-      box-shadow: 0 0 32px rgba(124, 58, 237, 0.15);
+    #call-btn:hover { background: #2ea043; }
+    #call-btn.active { background: #da3633; }
+    #call-btn.active:hover { background: #f85149; }
+    #status { margin-top: 20px; font-size: 0.875rem; color: #8b949e; min-height: 20px; }
+    .pulse {
+      display: inline-block; width: 8px; height: 8px;
+      background: #3fb950; border-radius: 50%; margin-right: 6px;
+      animation: pulse 1.2s ease-in-out infinite;
     }
-
-    #call-btn.active {
-      background: #052e16;
-      border-color: #16a34a;
-      box-shadow: 0 0 40px rgba(22, 163, 74, 0.2);
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
     }
-
-    #call-btn.active:hover {
-      box-shadow: 0 0 48px rgba(22, 163, 74, 0.3);
-    }
-
-    .btn-icon {
-      width: 28px;
-      height: 28px;
-      opacity: 0.85;
-    }
-
-    /* Status */
-    #status {
-      font-size: 0.78rem;
-      color: #444;
-      letter-spacing: 0.2px;
-      min-height: 18px;
-      text-align: center;
-    }
-
-    /* ── Footer ── */
-    footer {
-      padding: 28px;
-      text-align: center;
-      font-size: 0.7rem;
-      color: #333;
-      line-height: 1.6;
-    }
+    .disclaimer { font-size: 0.75rem; color: #6e7681; max-width: 480px; text-align: center; line-height: 1.6; }
   </style>
 </head>
 <body>
-
-  <header>
-    <div class="wordmark">
-      VoiceRx
-      <span>AI Health Assistant</span>
-    </div>
-  </header>
-
-  <main>
-    <div class="btn-wrap" id="btn-wrap">
-      <div class="ring ring-1"></div>
-      <div class="ring ring-2"></div>
-      <div class="ring ring-3"></div>
-
-      <button id="call-btn" onclick="toggleCall()">
-        <!-- Mic icon (idle) -->
-        <svg id="icon-mic" class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="9" y="2" width="6" height="12" rx="3"/>
-          <path d="M5 10a7 7 0 0 0 14 0"/>
-          <line x1="12" y1="19" x2="12" y2="22"/>
-          <line x1="8"  y1="22" x2="16" y2="22"/>
-        </svg>
-        <!-- Stop icon (active) -->
-        <svg id="icon-stop" class="btn-icon" viewBox="0 0 24 24" fill="currentColor" style="display:none">
-          <rect x="6" y="6" width="12" height="12" rx="2"/>
-        </svg>
-        <span id="btn-text">Talk to VoiceRx</span>
-      </button>
-    </div>
-
-    <div id="status"></div>
-  </main>
-
-  <footer>
-    For informational purposes only. Not a substitute for professional medical advice.
-  </footer>
+  <div class="card">
+    <div class="logo">🩺 VoiceRx</div>
+    <div class="tagline">AI-powered voice health assistant — ask your health questions out loud</div>
+    <button id="call-btn" onclick="toggleCall()">Start Voice Call</button>
+    <div id="status">Ready to connect</div>
+  </div>
+  <p class="disclaimer">⚠️ VoiceRx is a demo tool and does not provide medical advice. Always consult a qualified healthcare professional.</p>
 
   <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.umd.js"></script>
   <script>
     let inCall = false;
+    let vapi = null;
 
-    const vapi = new Vapi("8f6ec153-8e27-4bb3-84fd-7a004ecf5946");
+    const PUBLIC_KEY = "8f6ec153-8e27-4bb3-84fd-7a004ecf5946";
+    const ASSISTANT_ID = "49ab265f-6a73-4956-9f47-7a31e9963bf4";
 
-    vapi.on('call-start', function () {
-      setStatus('Listening…');
-      setActive(true);
-    });
+    function setStatus(text, pulse = false) {
+      document.getElementById("status").innerHTML = pulse
+        ? '<span class="pulse"></span>' + text : text;
+    }
 
-    vapi.on('call-end', function () {
-      setStatus('Call ended');
-      setActive(false);
-      setTimeout(function () { setStatus(''); }, 3000);
-    });
+    function setBtn(label, active = false) {
+      const btn = document.getElementById("call-btn");
+      btn.textContent = label;
+      active ? btn.classList.add("active") : btn.classList.remove("active");
+    }
 
-    vapi.on('error', function (e) {
-      console.error(e);
-      setStatus('Something went wrong. Please try again.');
-      setActive(false);
-    });
-
-    function toggleCall() {
+    async function toggleCall() {
       if (!inCall) {
-        setStatus('Connecting…');
-        vapi.start("49ab265f-6a73-4956-9f47-7a31e9963bf4");
+        await startCall();
       } else {
-        vapi.stop();
+        stopCall();
       }
     }
 
-    function setActive(active) {
-      inCall = active;
-      var btn  = document.getElementById('call-btn');
-      var wrap = document.getElementById('btn-wrap');
-      var mic  = document.getElementById('icon-mic');
-      var stop = document.getElementById('icon-stop');
+    async function startCall() {
+      try {
+        setStatus("Connecting...");
+        setBtn("Connecting...");
 
-      btn.classList.toggle('active', active);
-      wrap.classList.toggle('active', active);
-      mic.style.display  = active ? 'none'  : 'block';
-      stop.style.display = active ? 'block' : 'none';
-      document.getElementById('btn-text').textContent = active ? 'End Call' : 'Talk to VoiceRx';
+        vapi = new window.Vapi(PUBLIC_KEY);
+
+        vapi.on("call-start", () => {
+          inCall = true;
+          setStatus("Call active — speak your question", true);
+          setBtn("End Call", true);
+        });
+
+        vapi.on("call-end", () => {
+          inCall = false;
+          vapi = null;
+          setStatus("Call ended");
+          setBtn("Start Voice Call", false);
+        });
+
+        vapi.on("error", (e) => {
+          inCall = false;
+          vapi = null;
+          setStatus("Error: " + (e?.message || "Unknown"));
+          setBtn("Start Voice Call", false);
+          console.error(e);
+        });
+
+        await vapi.start(ASSISTANT_ID);
+      } catch (err) {
+        inCall = false;
+        vapi = null;
+        setStatus("Failed to connect.");
+        setBtn("Start Voice Call", false);
+        console.error(err);
+      }
     }
 
-    function setStatus(msg) {
-      document.getElementById('status').textContent = msg;
+    function stopCall() {
+      if (vapi) vapi.stop();
     }
   </script>
 </body>
