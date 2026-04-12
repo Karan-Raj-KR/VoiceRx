@@ -183,10 +183,11 @@
     For informational purposes only. Not a substitute for professional medical advice.
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/vapi.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.umd.js"></script>
   <script>
-    const vapi = new Vapi("8f6ec153-8e27-4bb3-84fd-7a004ecf5946");
     let inCall = false;
+
+    const vapi = new Vapi("8f6ec153-8e27-4bb3-84fd-7a004ecf5946");
 
     vapi.on('call-start', function () {
       setStatus('Listening…');
