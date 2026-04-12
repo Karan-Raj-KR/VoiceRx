@@ -21,6 +21,10 @@ groq_client = None
 
 COLLECTION_NAME = "health_faqs"
 
+@app.get("/")
+def health():
+    return {"status": "ok"}
+
 @app.post("/search")
 async def search(request: Request):
     body = await request.json()
