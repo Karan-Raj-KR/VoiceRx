@@ -3,152 +3,185 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VoiceRx – Your AI Health Assistant</title>
+  <title>VoiceRx</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 28px 36px;
+    }
+
+    .wordmark {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: -0.2px;
+    }
+
+    .wordmark span {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 400;
+      color: #555;
+      margin-top: 2px;
+      letter-spacing: 0;
+    }
+
+    /* ── Main ── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+    }
+
+    /* Outer pulse rings */
+    .btn-wrap {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0f4c75 100%);
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      color: #fff;
+      width: 200px;
+      height: 200px;
     }
 
-    .card {
-      text-align: center;
-      padding: 60px 48px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 24px;
-      backdrop-filter: blur(12px);
-      max-width: 420px;
-      width: 90%;
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
-    }
-
-    .logo {
-      font-size: 2.8rem;
-      font-weight: 800;
-      letter-spacing: -1px;
-      background: linear-gradient(90deg, #60a5fa, #a78bfa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 10px;
-    }
-
-    .tagline {
-      font-size: 1.05rem;
-      color: #94a3b8;
-      margin-bottom: 48px;
-      letter-spacing: 0.3px;
-    }
-
-    .pulse-ring {
-      position: relative;
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 36px;
-    }
-
-    .pulse-ring::before,
-    .pulse-ring::after {
-      content: '';
+    .ring {
       position: absolute;
       inset: 0;
       border-radius: 50%;
-      background: rgba(96, 165, 250, 0.2);
-      animation: pulse 2s ease-out infinite;
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      opacity: 0;
     }
 
-    .pulse-ring::after { animation-delay: 0.8s; }
+    .btn-wrap.active .ring-1 {
+      animation: ripple 2s ease-out infinite;
+    }
+    .btn-wrap.active .ring-2 {
+      animation: ripple 2s ease-out 0.6s infinite;
+    }
+    .btn-wrap.active .ring-3 {
+      animation: ripple 2s ease-out 1.2s infinite;
+    }
 
-    .pulse-ring .mic-icon {
+    @keyframes ripple {
+      0%   { transform: scale(1);    opacity: 0.5; }
+      100% { transform: scale(1.7);  opacity: 0; }
+    }
+
+    /* Main circle button */
+    #call-btn {
       position: relative;
       z-index: 1;
-      width: 80px;
-      height: 80px;
+      width: 160px;
+      height: 160px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #111;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
-    }
-
-    @keyframes pulse {
-      0%   { transform: scale(1);   opacity: 0.6; }
-      100% { transform: scale(1.8); opacity: 0; }
-    }
-
-    #call-btn {
-      display: inline-flex;
-      align-items: center;
       gap: 10px;
-      padding: 16px 36px;
-      font-size: 1rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      color: #fff;
-      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
-      letter-spacing: 0.3px;
+      transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+      outline: none;
+      letter-spacing: 0.1px;
     }
 
     #call-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5);
+      border-color: rgba(124, 58, 237, 0.5);
+      box-shadow: 0 0 32px rgba(124, 58, 237, 0.15);
     }
-
-    #call-btn:active { transform: translateY(0); }
 
     #call-btn.active {
-      background: linear-gradient(135deg, #ef4444, #f97316);
-      box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+      background: #052e16;
+      border-color: #16a34a;
+      box-shadow: 0 0 40px rgba(22, 163, 74, 0.2);
     }
 
+    #call-btn.active:hover {
+      box-shadow: 0 0 48px rgba(22, 163, 74, 0.3);
+    }
+
+    .btn-icon {
+      width: 28px;
+      height: 28px;
+      opacity: 0.85;
+    }
+
+    /* Status */
     #status {
-      margin-top: 20px;
-      font-size: 0.88rem;
-      color: #64748b;
-      min-height: 20px;
+      font-size: 0.78rem;
+      color: #444;
+      letter-spacing: 0.2px;
+      min-height: 18px;
+      text-align: center;
     }
 
-    .disclaimer {
-      margin-top: 36px;
-      font-size: 0.75rem;
-      color: #475569;
-      line-height: 1.5;
+    /* ── Footer ── */
+    footer {
+      padding: 28px;
+      text-align: center;
+      font-size: 0.7rem;
+      color: #333;
+      line-height: 1.6;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="logo">VoiceRx</div>
-    <div class="tagline">Your AI Health Assistant</div>
 
-    <div class="pulse-ring">
-      <div class="mic-icon">🎙️</div>
+  <header>
+    <div class="wordmark">
+      VoiceRx
+      <span>AI Health Assistant</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="btn-wrap" id="btn-wrap">
+      <div class="ring ring-1"></div>
+      <div class="ring ring-2"></div>
+      <div class="ring ring-3"></div>
+
+      <button id="call-btn" onclick="toggleCall()">
+        <!-- Mic icon (idle) -->
+        <svg id="icon-mic" class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="2" width="6" height="12" rx="3"/>
+          <path d="M5 10a7 7 0 0 0 14 0"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="8"  y1="22" x2="16" y2="22"/>
+        </svg>
+        <!-- Stop icon (active) -->
+        <svg id="icon-stop" class="btn-icon" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+          <rect x="6" y="6" width="12" height="12" rx="2"/>
+        </svg>
+        <span id="btn-text">Talk to VoiceRx</span>
+      </button>
     </div>
 
-    <button id="call-btn" onclick="toggleCall()">
-      <span id="btn-icon">▶</span>
-      <span id="btn-text">Start Consultation</span>
-    </button>
-
     <div id="status"></div>
+  </main>
 
-    <p class="disclaimer">
-      For informational purposes only.<br />
-      Always consult a qualified healthcare professional.
-    </p>
-  </div>
+  <footer>
+    For informational purposes only. Not a substitute for professional medical advice.
+  </footer>
 
   <script>
     var vapiInstance = null;
@@ -160,7 +193,7 @@
       vapiInstance = new Vapi('8f6ec153-8e27-4bb3-84fd-7a004ecf5946');
 
       vapiInstance.on('call-start', function () {
-        setStatus('Connected — speak your question');
+        setStatus('Listening…');
         setActive(true);
       });
 
@@ -190,10 +223,16 @@
 
     function setActive(active) {
       inCall = active;
-      var btn = document.getElementById('call-btn');
+      var btn    = document.getElementById('call-btn');
+      var wrap   = document.getElementById('btn-wrap');
+      var mic    = document.getElementById('icon-mic');
+      var stop   = document.getElementById('icon-stop');
+
       btn.classList.toggle('active', active);
-      document.getElementById('btn-icon').textContent = active ? '■' : '▶';
-      document.getElementById('btn-text').textContent  = active ? 'End Call' : 'Start Consultation';
+      wrap.classList.toggle('active', active);
+      mic.style.display  = active ? 'none'         : 'block';
+      stop.style.display = active ? 'block'        : 'none';
+      document.getElementById('btn-text').textContent = active ? 'End Call' : 'Talk to VoiceRx';
     }
 
     function setStatus(msg) {
