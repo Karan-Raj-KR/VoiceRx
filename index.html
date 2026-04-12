@@ -99,7 +99,8 @@
         setStatus("Connecting...");
         setBtn("Connecting...");
 
-        vapi = new window.Vapi(PUBLIC_KEY);
+        const VapiClass = window.Vapi?.default || window.Vapi;
+        vapi = new VapiClass(PUBLIC_KEY);
 
         vapi.on("call-start", () => {
           inCall = true;
