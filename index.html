@@ -183,55 +183,48 @@
     For informational purposes only. Not a substitute for professional medical advice.
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/vapi.js"></script>
   <script>
-    var vapiInstance = null;
-    var inCall = false;
+    const vapi = new Vapi("8f6ec153-8e27-4bb3-84fd-7a004ecf5946");
+    let inCall = false;
 
-    var script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.js';
-    script.onload = function () {
-      vapiInstance = new Vapi('8f6ec153-8e27-4bb3-84fd-7a004ecf5946');
+    vapi.on('call-start', function () {
+      setStatus('Listening…');
+      setActive(true);
+    });
 
-      vapiInstance.on('call-start', function () {
-        setStatus('Listening…');
-        setActive(true);
-      });
+    vapi.on('call-end', function () {
+      setStatus('Call ended');
+      setActive(false);
+      setTimeout(function () { setStatus(''); }, 3000);
+    });
 
-      vapiInstance.on('call-end', function () {
-        setStatus('Call ended');
-        setActive(false);
-        setTimeout(function () { setStatus(''); }, 3000);
-      });
-
-      vapiInstance.on('error', function (e) {
-        console.error(e);
-        setStatus('Something went wrong. Please try again.');
-        setActive(false);
-      });
-    };
-    document.head.appendChild(script);
+    vapi.on('error', function (e) {
+      console.error(e);
+      setStatus('Something went wrong. Please try again.');
+      setActive(false);
+    });
 
     function toggleCall() {
-      if (!vapiInstance) { setStatus('Loading…'); return; }
       if (!inCall) {
         setStatus('Connecting…');
-        vapiInstance.start('49ab265f-6a73-4956-9f47-7a31e9963bf4');
+        vapi.start("49ab265f-6a73-4956-9f47-7a31e9963bf4");
       } else {
-        vapiInstance.stop();
+        vapi.stop();
       }
     }
 
     function setActive(active) {
       inCall = active;
-      var btn    = document.getElementById('call-btn');
-      var wrap   = document.getElementById('btn-wrap');
-      var mic    = document.getElementById('icon-mic');
-      var stop   = document.getElementById('icon-stop');
+      var btn  = document.getElementById('call-btn');
+      var wrap = document.getElementById('btn-wrap');
+      var mic  = document.getElementById('icon-mic');
+      var stop = document.getElementById('icon-stop');
 
       btn.classList.toggle('active', active);
       wrap.classList.toggle('active', active);
-      mic.style.display  = active ? 'none'         : 'block';
-      stop.style.display = active ? 'block'        : 'none';
+      mic.style.display  = active ? 'none'  : 'block';
+      stop.style.display = active ? 'block' : 'none';
       document.getElementById('btn-text').textContent = active ? 'End Call' : 'Talk to VoiceRx';
     }
 
