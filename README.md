@@ -34,6 +34,12 @@ Vapi (text-to-speech)
 Patient hears response
 ```
 
+## Architecture
+
+```
+Patient speaks → Vapi (STT) → Tool Call → FastAPI /search endpoint → FastEmbed (embed query) → Qdrant (semantic search, top 3 results) → Groq LLM (synthesize answer with context) → Vapi (TTS) → Patient hears response
+```
+
 ## Setup
 
 ### 1. Install dependencies
