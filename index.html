@@ -26,7 +26,6 @@
       max-width: 480px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     }
     .logo { font-size: 2rem; font-weight: 700; color: #58a6ff; margin-bottom: 8px; }
     .tagline { color: #8b949e; font-size: 0.95rem; margin-bottom: 36px; }
@@ -44,54 +43,35 @@
     }
     #call-btn:hover { background: #2ea043; }
     #call-btn.active { background: #da3633; }
-    #call-btn.active:hover { background: #f85149; }
     #status { margin-top: 20px; font-size: 0.875rem; color: #8b949e; min-height: 20px; }
-    .pulse {
-      display: inline-block; width: 8px; height: 8px;
-      background: #3fb950; border-radius: 50%; margin-right: 6px;
-      animation: pulse 1.2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.8); }
-    }
-    .disclaimer { font-size: 0.75rem; color: #6e7681; max-width: 480px; text-align: center; line-height: 1.6; }
+    .disclaimer { font-size: 0.75rem; color: #6e7681; max-width: 480px; text-align: center; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="logo">🩺 VoiceRx</div>
-    <div class="tagline">AI-powered voice health assistant — ask your health questions out loud</div>
-    <button id="call-btn" onclick="toggleCall()">Start Voice Call</button>
+    <div class="tagline">AI-powered voice health assistant</div>
+    <button id="call-btn">Start Voice Call</button>
     <div id="status">Ready to connect</div>
   </div>
-  <p class="disclaimer">⚠️ VoiceRx is a demo tool and does not provide medical advice. Always consult a qualified healthcare professional.</p>
+  <p class="disclaimer">⚠️ Demo only. Not medical advice.</p>
 
-  <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.umd.js"></script>
-  <script>
-    let inCall = false;
-    let vapi = null;
+  <script type="module">
+    import Vapi from "https://esm.sh/@vapi-ai/web";
 
-    const PUBLIC_KEY = "8f6ec153-8e27-4bb3-84fd-7a004ecf5946";
+    const PUBLIC_KEY   = "8f6ec153-8e27-4bb3-84fd-7a004ecf5946";
     const ASSISTANT_ID = "49ab265f-6a73-4956-9f47-7a31e9963bf4";
 
-    function setStatus(text, pulse = false) {
-      document.getElementById("status").innerHTML = pulse
-        ? '<span class="pulse"></span>' + text : text;
-    }
+    let inCall = false;
+    let vapi   = null;
 
+    const btn    = document.getElementById("call-btn");
+    const status = document.getElementById("status");
+
+    function setStatus(text) { status.textContent = text; }
     function setBtn(label, active = false) {
-      const btn = document.getElementById("call-btn");
       btn.textContent = label;
       active ? btn.classList.add("active") : btn.classList.remove("active");
-    }
-
-    async function toggleCall() {
-      if (!inCall) {
-        await startCall();
-      } else {
-        stopCall();
-      }
     }
 
     async function startCall() {
@@ -99,12 +79,11 @@
         setStatus("Connecting...");
         setBtn("Connecting...");
 
-        const VapiClass = window.Vapi?.default || window.Vapi;
-        vapi = new VapiClass(PUBLIC_KEY);
+        vapi = new Vapi(PUBLIC_KEY);
 
         vapi.on("call-start", () => {
           inCall = true;
-          setStatus("Call active — speak your question", true);
+          setStatus("Call active — speak your question");
           setBtn("End Call", true);
         });
 
@@ -118,7 +97,7 @@
         vapi.on("error", (e) => {
           inCall = false;
           vapi = null;
-          setStatus("Error: " + (e?.message || "Unknown"));
+          setStatus("Error: " + (e?.message || "unknown"));
           setBtn("Start Voice Call", false);
           console.error(e);
         });
@@ -136,6 +115,10 @@
     function stopCall() {
       if (vapi) vapi.stop();
     }
+
+    btn.addEventListener("click", () => {
+      if (!inCall) startCall(); else stopCall();
+    });
   </script>
 </body>
 </html>
