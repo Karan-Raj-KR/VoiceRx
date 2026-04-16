@@ -1,114 +1,767 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VoiceRx — AI Voice Health Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f2ee;
+      --surface: #ffffff;
+      --border: #e8e2d9;
+      --text-primary: #1a1a1a;
+      --text-secondary: #6b6560;
+      --text-muted: #a8a29e;
+      --accent: #1a6b4a;
+      --accent-light: #e8f5ee;
+      --accent-glow: rgba(26, 107, 74, 0.15);
+      --red: #c0392b;
+      --red-light: #fdf2f0;
+      --pulse: #1a6b4a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0d1117;
-      color: #e6edf3;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 24px;
       padding: 24px;
+      position: relative;
+      overflow: hidden;
     }
-    .card {
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 16px;
-      padding: 40px 32px;
-      max-width: 480px;
+
+    /* Background texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(26, 107, 74, 0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 60% at 80% 80%, rgba(26, 107, 74, 0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* Grain overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
       width: 100%;
-      text-align: center;
+      max-width: 460px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: fadeUp 0.6s ease both;
     }
-    .logo { font-size: 2rem; font-weight: 700; color: #58a6ff; margin-bottom: 8px; }
-    .tagline { color: #8b949e; font-size: 0.95rem; margin-bottom: 36px; }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .logo-mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+    }
+
+    .logo-text {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.5rem;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .logo-text span {
+      color: var(--accent);
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--accent);
+      background: var(--accent-light);
+      border: 1px solid rgba(26, 107, 74, 0.2);
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* Main Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    /* Visualizer */
+    .visualizer-wrap {
+      width: 120px;
+      height: 120px;
+      position: relative;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pulse-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      opacity: 0;
+      transform: scale(0.8);
+    }
+
+    .pulse-ring.r1 {
+      animation: none;
+    }
+
+    .pulse-ring.r2 {
+      animation: none;
+    }
+
+    .pulse-ring.r3 {
+      animation: none;
+    }
+
+    @keyframes pulseRing {
+      0% {
+        opacity: 0.6;
+        transform: scale(0.85);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(1.4);
+      }
+    }
+
+    .visualizer-wrap.active .r1 {
+      animation: pulseRing 1.6s ease-out infinite;
+    }
+
+    .visualizer-wrap.active .r2 {
+      animation: pulseRing 1.6s ease-out 0.5s infinite;
+    }
+
+    .visualizer-wrap.active .r3 {
+      animation: pulseRing 1.6s ease-out 1s infinite;
+    }
+
+    .mic-circle {
+      width: 76px;
+      height: 76px;
+      background: var(--accent-light);
+      border: 2px solid rgba(26, 107, 74, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .visualizer-wrap.active .mic-circle {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .visualizer-wrap.active .mic-circle svg {
+      fill: white;
+    }
+
+    .mic-circle svg {
+      width: 32px;
+      height: 32px;
+      fill: var(--accent);
+      transition: fill 0.3s;
+    }
+
+    /* Waveform bars */
+    .waveform {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 32px;
+      margin-bottom: 28px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .waveform.active {
+      opacity: 1;
+    }
+
+    .bar {
+      width: 3px;
+      border-radius: 4px;
+      background: var(--accent);
+      height: 6px;
+      transition: height 0.1s;
+    }
+
+    .waveform.active .bar:nth-child(1) {
+      animation: wave 1.1s ease-in-out infinite;
+    }
+
+    .waveform.active .bar:nth-child(2) {
+      animation: wave 1.1s ease-in-out 0.1s infinite;
+    }
+
+    .waveform.active .bar:nth-child(3) {
+      animation: wave 1.1s ease-in-out 0.2s infinite;
+    }
+
+    .waveform.active .bar:nth-child(4) {
+      animation: wave 1.1s ease-in-out 0.3s infinite;
+    }
+
+    .waveform.active .bar:nth-child(5) {
+      animation: wave 1.1s ease-in-out 0.15s infinite;
+    }
+
+    .waveform.active .bar:nth-child(6) {
+      animation: wave 1.1s ease-in-out 0.25s infinite;
+    }
+
+    .waveform.active .bar:nth-child(7) {
+      animation: wave 1.1s ease-in-out 0.05s infinite;
+    }
+
+    .waveform.active .bar:nth-child(8) {
+      animation: wave 1.1s ease-in-out 0.35s infinite;
+    }
+
+    .waveform.active .bar:nth-child(9) {
+      animation: wave 1.1s ease-in-out 0.2s infinite;
+    }
+
+    .waveform.active .bar:nth-child(10) {
+      animation: wave 1.1s ease-in-out 0.4s infinite;
+    }
+
+    .waveform.active .bar:nth-child(11) {
+      animation: wave 1.1s ease-in-out 0.1s infinite;
+    }
+
+    .waveform.active .bar:nth-child(12) {
+      animation: wave 1.1s ease-in-out 0.3s infinite;
+    }
+
+    @keyframes wave {
+
+      0%,
+      100% {
+        height: 6px;
+        opacity: 0.4;
+      }
+
+      50% {
+        height: 28px;
+        opacity: 1;
+      }
+    }
+
+    /* Heading */
+    .card-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.6rem;
+      color: var(--text-primary);
+      text-align: center;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .card-sub {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.5;
+      margin-bottom: 32px;
+      max-width: 300px;
+    }
+
+    /* Status chip */
+    .status-chip {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: #f5f5f4;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      margin-bottom: 24px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      transition: all 0.3s;
+      min-width: 160px;
+      justify-content: center;
+    }
+
+    .status-chip.active {
+      background: var(--accent-light);
+      border-color: rgba(26, 107, 74, 0.3);
+      color: var(--accent);
+    }
+
+    .status-chip.error {
+      background: var(--red-light);
+      border-color: rgba(192, 57, 43, 0.2);
+      color: var(--red);
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+
+    .status-chip.active .dot {
+      background: var(--accent);
+      animation: blink 1.2s ease-in-out infinite;
+    }
+
+    .status-chip.error .dot {
+      background: var(--red);
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    /* Button */
     #call-btn {
-      background: #238636;
-      color: #fff;
+      width: 100%;
+      padding: 15px 32px;
+      border-radius: 14px;
       border: none;
-      border-radius: 50px;
-      padding: 16px 40px;
-      font-size: 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
-      width: 100%;
-      transition: background 0.2s;
+      background: var(--accent);
+      color: white;
+      transition: all 0.2s;
+      letter-spacing: 0.01em;
+      position: relative;
+      overflow: hidden;
     }
-    #call-btn:hover { background: #2ea043; }
-    #call-btn.active { background: #da3633; }
-    #status { margin-top: 20px; font-size: 0.875rem; color: #8b949e; min-height: 20px; }
-    .disclaimer { font-size: 0.75rem; color: #6e7681; max-width: 480px; text-align: center; }
+
+    #call-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    #call-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(26, 107, 74, 0.3);
+    }
+
+    #call-btn:active {
+      transform: translateY(0);
+    }
+
+    #call-btn.active {
+      background: var(--red);
+    }
+
+    #call-btn.active:hover {
+      box-shadow: 0 4px 16px rgba(192, 57, 43, 0.3);
+    }
+
+    #call-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Features row */
+    .features {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+      width: 100%;
+    }
+
+    .feat {
+      flex: 1;
+      background: #fafaf9;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .feat-icon {
+      font-size: 1.1rem;
+    }
+
+    .feat-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    /* Info cards */
+    .info-strip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+
+    .info-row+.info-row {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .info-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--accent-light);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    /* Footer */
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .footer svg {
+      width: 12px;
+      height: 12px;
+      fill: var(--text-muted);
+      flex-shrink: 0;
+    }
   </style>
 </head>
+
 <body>
-  <div class="card">
-    <div class="logo">🩺 VoiceRx</div>
-    <div class="tagline">AI-powered voice health assistant</div>
-    <button id="call-btn">Start Voice Call</button>
-    <div id="status">Ready to connect</div>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="logo-mark">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M12 2C8.686 2 6 4.686 6 8v4c0 3.314 2.686 6 6 6s6-2.686 6-6V8c0-3.314-2.686-6-6-6zm0 14c-2.21 0-4-1.79-4-4V8c0-2.21 1.79-4 4-4s4 1.79 4 4v4c0 2.21-1.79 4-4 4zm-1 2h2v2h2v2H9v-2h2v-2z" />
+          </svg>
+        </div>
+        <span class="logo-text">Voice<span>Rx</span></span>
+      </div>
+      <div class="badge">AI Health</div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="card">
+      <!-- Visualizer -->
+      <div class="visualizer-wrap" id="viz">
+        <div class="pulse-ring r1"></div>
+        <div class="pulse-ring r2"></div>
+        <div class="pulse-ring r3"></div>
+        <div class="mic-circle">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M12 2C8.686 2 6 4.686 6 8v4c0 3.314 2.686 6 6 6s6-2.686 6-6V8c0-3.314-2.686-6-6-6zm0 14c-2.21 0-4-1.79-4-4V8c0-2.21 1.79-4 4-4s4 1.79 4 4v4c0 2.21-1.79 4-4 4zm-1 2h2v2h2v2H9v-2h2v-2z" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Waveform -->
+      <div class="waveform" id="waveform">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+
+      <div class="card-title">Talk to your health assistant</div>
+      <div class="card-sub">Describe your symptoms and get instant, AI-powered guidance. Powered by RAG + voice AI.
+      </div>
+
+      <!-- Status -->
+      <div class="status-chip" id="status-chip">
+        <div class="dot"></div>
+        <span id="status-text">Ready to connect</span>
+      </div>
+
+      <!-- Button -->
+      <button id="call-btn">Start Voice Call</button>
+
+      <!-- Features -->
+      <div class="features">
+        <div class="feat">
+          <div class="feat-icon">🔍</div>
+          <div class="feat-label">RAG Search</div>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">🧠</div>
+          <div class="feat-label">LLM Reasoning</div>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">🔒</div>
+          <div class="feat-label">Private</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info strip -->
+    <div class="info-strip">
+      <div class="info-row">
+        <div class="info-icon">🩺</div>
+        <span>Designed for patients who can't access doctors immediately</span>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">⚡</div>
+        <span>Powered by Vapi · Qdrant · Groq · FastAPI</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+      </svg>
+      Demo only — not medical advice. Built for HackBLR 2026.
+    </div>
+
   </div>
-  <p class="disclaimer">⚠️ Demo only. Not medical advice.</p>
 
   <script type="module">
-    import Vapi from "https://esm.sh/@vapi-ai/web";
+    import Vapi from "https://esm.sh/@vapi-ai/web@2.5.2";
 
-    const PUBLIC_KEY   = "8f6ec153-8e27-4bb3-84fd-7a004ecf5946";
-    const ASSISTANT_ID = "49ab265f-6a73-4956-9f47-7a31e9963bf4";
-
+    let config = null;
+    let PUBLIC_KEY = null;
+    let ASSISTANT_ID = null;
     let inCall = false;
-    let vapi   = null;
+    let vapi = null;
+    let isConnecting = false;
 
-    const btn    = document.getElementById("call-btn");
-    const status = document.getElementById("status");
+    const btn = document.getElementById("call-btn");
+    const statusText = document.getElementById("status-text");
+    const statusChip = document.getElementById("status-chip");
+    const viz = document.getElementById("viz");
+    const waveform = document.getElementById("waveform");
 
-    function setStatus(text) { status.textContent = text; }
-    function setBtn(label, active = false) {
-      btn.textContent = label;
-      active ? btn.classList.add("active") : btn.classList.remove("active");
+    function setStatus(text, state = "idle") {
+      statusText.textContent = text;
+      statusChip.className = "status-chip";
+      if (state === "active") statusChip.classList.add("active");
+      if (state === "error") statusChip.classList.add("error");
+    }
+
+    function setActive(active) {
+      if (active) {
+        btn.textContent = "End Call";
+        btn.classList.add("active");
+        viz.classList.add("active");
+        waveform.classList.add("active");
+      } else {
+        btn.textContent = "Start Voice Call";
+        btn.classList.remove("active");
+        viz.classList.remove("active");
+        waveform.classList.remove("active");
+      }
+    }
+
+    async function loadConfig() {
+      try {
+        const res = await fetch('/config');
+        config = await res.json();
+        return config;
+      } catch (e) {
+        console.error("Failed to load config:", e);
+        return null;
+      }
+    }
+
+    async function init() {
+      config = await loadConfig();
+      if (config) {
+        PUBLIC_KEY = config.publicKey;
+        ASSISTANT_ID = config.assistantId;
+        console.log("[Vapi] Public Key:", PUBLIC_KEY);
+        console.log("[Vapi] Assistant ID:", ASSISTANT_ID);
+      }
+      if (!PUBLIC_KEY || !ASSISTANT_ID) {
+        setStatus("Config missing — check backend", "error");
+        return false;
+      }
+      return true;
     }
 
     async function startCall() {
+      if (isConnecting || inCall) return;
+      const ready = await init();
+      if (!ready) { setStatus("Not ready — check config", "error"); return; }
+
       try {
+        isConnecting = true;
+        btn.disabled = true;
         setStatus("Connecting...");
-        setBtn("Connecting...");
 
         vapi = new Vapi(PUBLIC_KEY);
 
         vapi.on("call-start", () => {
           inCall = true;
-          setStatus("Call active — speak your question");
-          setBtn("End Call", true);
+          isConnecting = false;
+          btn.disabled = false;
+          setStatus("Listening — speak now", "active");
+          setActive(true);
         });
 
         vapi.on("call-end", () => {
           inCall = false;
+          isConnecting = false;
+          btn.disabled = false;
           vapi = null;
-          setStatus("Call ended");
-          setBtn("Start Voice Call", false);
+          setStatus("Call ended", "idle");
+          setActive(false);
         });
 
         vapi.on("error", (e) => {
           inCall = false;
+          isConnecting = false;
+          btn.disabled = false;
           vapi = null;
-          setStatus("Error: " + (e?.message || "unknown"));
-          setBtn("Start Voice Call", false);
-          console.error(e);
+          const msg = e?.message || e?.error?.message || "Connection failed";
+          setStatus(msg, "error");
+          setActive(false);
+          console.error("[Vapi] Error:", e);
         });
 
+        vapi.on("speech-start", () => {
+          waveform.classList.add("active");
+        });
+
+        vapi.on("speech-end", () => {
+          if (!inCall) waveform.classList.remove("active");
+        });
+
+        console.log("[Vapi] Starting call with assistant:", ASSISTANT_ID);
         await vapi.start(ASSISTANT_ID);
       } catch (err) {
         inCall = false;
+        isConnecting = false;
+        btn.disabled = false;
         vapi = null;
-        setStatus("Failed to connect.");
-        setBtn("Start Voice Call", false);
-        console.error(err);
+        setStatus("Failed: " + err.message, "error");
+        setActive(false);
       }
     }
 
@@ -117,8 +770,12 @@
     }
 
     btn.addEventListener("click", () => {
-      if (!inCall) startCall(); else stopCall();
+      if (!inCall && !isConnecting) startCall();
+      else if (inCall) stopCall();
     });
+
+    init();
   </script>
 </body>
+
 </html>
